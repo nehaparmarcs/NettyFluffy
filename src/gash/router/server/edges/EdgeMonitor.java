@@ -19,8 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gash.router.container.RoutingConf.RoutingEntry;
+import gash.router.server.CommandInit;
 import gash.router.server.NewWorkChannelInit;
 import gash.router.server.ServerState;
+import gash.router.server.WorkInit;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -41,6 +43,7 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 	private ServerState state;
 	private boolean forever = true;
 	private EventLoopGroup group;
+	private ChannelFuture channel;
 
 	public EdgeMonitor(ServerState state) {
 		if (state == null)
@@ -48,7 +51,7 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 
 		this.outboundEdges = new EdgeList();
 		this.inboundEdges = new EdgeList();
-		this.group = new NioEventLoopGroup ();
+		this.group = new NioEventLoopGroup();
 		this.state = state;
 		this.state.setEmon(this);
 
@@ -83,6 +86,7 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 		WorkMessage.Builder wb = WorkMessage.newBuilder();
 		wb.setHeader(hb);
 		wb.setBeat(bb);
+		wb.setSecret(1);
 
 		return wb.build();
 	}
@@ -100,42 +104,39 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 					
 					if (ei.isActive() && ei.getChannel() != null) {
 						WorkMessage wm = createHB(ei);
-						logger.info("Writing HeartBeat to  -->" + ei.getRef());
+						logger.info("Writing HeartBeat to  -->" + ei.getRef()+ ", host:port is :"+ei.getHost()+","+ei.getPort());
 						ei.getChannel().writeAndFlush(wm);
 					} else {
-						// TODO create a client to the node
+						// TODO Created the client connection below
 						
 							logger.info("creating new connection with the node " + ei.getRef());
 
 						try {
-							NewWorkChannelInit wi = new NewWorkChannelInit(state,
-								false);
-							Bootstrap b = new Bootstrap();
-							b.group(group).channel(NioSocketChannel.class).handler(wi);
-							b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
-							b.option(ChannelOption.TCP_NODELAY, true);
-							b.option(ChannelOption.SO_KEEPALIVE, true);
-
-							//Try making the connection here
-							ChannelFuture channel = b.connect(ei.getHost(), ei.getPort())
-								.syncUninterruptibly();
-
-							// want to monitor the connection to the server s.t.
-							// if we loose the
-							// connection, we can try to re-establish it.
-							// channel.channel().closeFuture();
-
-							ei.setChannel(channel.channel());
-							ei.setActive(channel.channel().isActive());
-							ei.setLastHeartbeat(System.currentTimeMillis());
-							logger.info(channel.channel().localAddress() + " -> open: "
-								+ channel.channel().isOpen() + ", write: "
-								+ channel.channel().isWritable() + ", reg: "
-								+ channel.channel().isRegistered());
+								NewWorkChannelInit wi = new NewWorkChannelInit(state, false);
+								Bootstrap b = new Bootstrap();
+								b.group(group).channel(NioSocketChannel.class).handler(wi);
+								b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
+								b.option(ChannelOption.TCP_NODELAY, true);
+								b.option(ChannelOption.SO_KEEPALIVE, true);
+	
+								//Try making the connection here
+								channel = b.connect(ei.getHost(), ei.getPort())
+									.syncUninterruptibly();
+								logger.info("Connected to host,port"+ei.getHost()+", "+ ei.getPort());
+								
+								ei.setChannel(channel.channel());
+								ei.setActive(channel.channel().isActive());
+								ei.setLastHeartbeat(System.currentTimeMillis());
+								logger.info(channel.channel().remoteAddress() + " -> open: "
+										+channel.channel().isActive() + ", isActive"
+									+ channel.channel().isOpen() + ", write: "
+									+ channel.channel().isWritable() + ", reg: "
+									+ channel.channel().isRegistered());
+								
 
 						} catch (Throwable ex) {
+							ex.printStackTrace();
 							logger.error("connection creation failed");
-							// ex.printStackTrace();
 						}
 					}
 				}
@@ -146,6 +147,24 @@ public class EdgeMonitor implements EdgeListener, Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	
+	
+	public EdgeList getOutboundEdges() {
+		return outboundEdges;
+	}
+
+	public EdgeList getInboundEdges() {
+		return inboundEdges;
+	}
+
+	public ServerState getState() {
+		return state;
+	}
+
+	public void setState(ServerState state) {
+		this.state = state;
 	}
 
 	@Override

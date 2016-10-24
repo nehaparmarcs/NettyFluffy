@@ -4,6 +4,7 @@ package gash.router.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gash.router.server.handlers.HeartBeatHandler;
 import gash.router.server.handlers.IMessageHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,9 +24,9 @@ import pipe.work.Work.WorkState;
  * 
  */
 public class NewWorkChannelHandler extends SimpleChannelInboundHandler<WorkMessage> {
-	protected static Logger logger = LoggerFactory.getLogger("work");
+	protected static Logger logger = LoggerFactory.getLogger("NewWorkChannelHandler");
 	protected ServerState state;
-	protected boolean debug = false;
+	protected boolean debug = true;
 	//start of message handlers chain 
 	private IMessageHandler messageHandler;
 
@@ -33,8 +34,9 @@ public class NewWorkChannelHandler extends SimpleChannelInboundHandler<WorkMessa
 		if (state != null) {
 			this.state = state;
 		}
+		messageHandler = new HeartBeatHandler(state);
 	}
-
+	
 	/**
 	 * override this method to provide processing behavior. T
 	 * 
@@ -53,22 +55,8 @@ public class NewWorkChannelHandler extends SimpleChannelInboundHandler<WorkMessa
 		// TODO How can you implement this without if-else statements?
 		try {
 			if (msg.hasBeat()) {
-				Heartbeat hb = msg.getBeat();
-				logger.debug("heartbeat from " + msg.getHeader().getNodeId());
-			} else if (msg.hasPing()) {
-				logger.info("ping from " + msg.getHeader().getNodeId());
-				boolean p = msg.getPing();
-				WorkMessage.Builder rb = WorkMessage.newBuilder();
-				rb.setPing(true);
-				channel.write(rb.build());
-			} else if (msg.hasErr()) {
-				Failure err = msg.getErr();
-				logger.error("failure from " + msg.getHeader().getNodeId());
-				// PrintUtil.printFailure(err);
-			} else if (msg.hasTask()) {
-				Task t = msg.getTask();
-			} else if (msg.hasState()) {
-				WorkState s = msg.getState();
+				messageHandler.handleMessage(msg, channel);
+				logger.info("heartbeat from " + msg.getHeader().getNodeId());
 			}
 		} catch (Exception e) {
 			// TODO add logging

@@ -53,6 +53,6 @@ public class NewWorkChannelInit extends ChannelInitializer<SocketChannel> {
 		pipeline.addLast("protobufEncoder", new ProtobufEncoder());
 
 		// our server processor (new instance for each connection)
-		pipeline.addLast("handler", new WorkHandler(state));
+		pipeline.addLast("handler", new NewWorkChannelHandler(state));
 	}
 }
