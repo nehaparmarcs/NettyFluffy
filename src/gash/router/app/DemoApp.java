@@ -50,6 +50,25 @@ public class DemoApp implements CommListener {
 		System.out.println("");
 	}
 
+	private void post(int N) {
+		final int maxN = 10;
+		long[] dt = new long[N];
+		long st = System.currentTimeMillis(), ft = 0;
+		for (int n = 0; n < N; n++) {
+			mc.clientRequest();
+			ft = System.currentTimeMillis();
+			dt[n] = ft - st;
+			st = ft;
+		}
+
+		System.out.println("Post to my redis time (msec)");
+		for (int n = 0; n < N; n++)
+			System.out.print(dt[n] + " ");
+		System.out.println("");
+	}
+	
+	
+	
 	@Override
 	public String getListenerID() {
 		return "demo";
@@ -75,7 +94,8 @@ public class DemoApp implements CommListener {
 			DemoApp da = new DemoApp(mc);
 
 			// do stuff w/ the connection
-			da.ping(2);
+			//da.ping(2);
+			da.post(2);
 
 			System.out.println("\n** exiting in 10 seconds. **");
 			System.out.flush();

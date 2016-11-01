@@ -18,6 +18,9 @@ package gash.router.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.protobuf.ByteString;
+import com.router.service.impl.RedisDBServiceImpl;
+
 import gash.router.container.RoutingConf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,6 +38,7 @@ import routing.Pipe.CommandMessage;
  */
 public class CommandHandler extends SimpleChannelInboundHandler<CommandMessage> {
 	protected static Logger logger = LoggerFactory.getLogger("cmd");
+	RedisDBServiceImpl redisServiceImpl = new RedisDBServiceImpl();
 	protected RoutingConf conf;
 
 	public CommandHandler(RoutingConf conf) {
@@ -61,6 +65,10 @@ public class CommandHandler extends SimpleChannelInboundHandler<CommandMessage> 
 
 		try {
 			// TODO How can you implement this without if-else statements?
+			if(msg.hasReqMsg()){
+				logger.info("Post Request from Client " + msg.getHeader().getNodeId());
+				redisServiceImpl.store(msg.getReqMsg().getData().toByteArray());
+			}
 			if (msg.hasPing()) {
 				logger.info("ping from " + msg.getHeader().getNodeId());
 			} else if (msg.hasMessage()) {

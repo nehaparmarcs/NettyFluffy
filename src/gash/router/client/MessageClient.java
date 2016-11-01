@@ -15,6 +15,12 @@
  */
 package gash.router.client;
 
+import com.google.protobuf.ByteString;
+import com.message.ClientMessage;
+import com.message.ClientMessage.ChunkInfo;
+import com.message.ClientMessage.Operation;
+import com.message.ClientMessage.RequestMessage;
+
 import pipe.common.Common.Header;
 import routing.Pipe.CommandMessage;
 
@@ -40,6 +46,41 @@ public class MessageClient {
 		CommConnection.getInstance().addListener(listener);
 	}
 
+	public void clientRequest() {
+		Header.Builder hb = Header.newBuilder();
+		hb.setNodeId(999);
+		hb.setTime(System.currentTimeMillis());
+		hb.setDestination(-1);
+		
+		//ClientMessage.RequestMessage clientMsg = ClientMessage.();
+		//ClientMessage.Builder clientMsg = ClientMessage.newBuilder();
+		
+		ChunkInfo.Builder cb =  ChunkInfo.newBuilder();
+		cb.setNoOfChunks(1);
+		
+		RequestMessage.Builder reqMsg = RequestMessage.newBuilder();
+		//reqMsg.setData(ByteString.copyFromUtf8("Add some random data"));
+		reqMsg.setData(ByteString.copyFromUtf8("Add some random data"));
+		reqMsg.setOperation(Operation.POST);
+		//reqMsg.setChunkInfo(cb);
+		reqMsg.setSeqNo(1);
+		
+		
+		CommandMessage.Builder rb = CommandMessage.newBuilder();
+		rb.setHeader(hb);
+		rb.setPing(true);
+		
+		rb.setReqMsg(reqMsg);
+		
+		try {
+			
+			CommConnection.getInstance().enqueue(rb.build());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public void ping() {
 		// construct the message to send
 		Header.Builder hb = Header.newBuilder();
