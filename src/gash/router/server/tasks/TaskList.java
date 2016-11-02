@@ -35,6 +35,7 @@ public class TaskList {
 	private int processed;
 	private int balanced;
 	private Rebalancer rebalance;
+	public final int MAX_SIZE = 20;
 
 	public TaskList(Rebalancer rb) {
 		rebalance = rb;
