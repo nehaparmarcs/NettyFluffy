@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gash.router.server.handlers.HeartBeatHandler;
-import gash.router.server.handlers.IMessageHandler;
+import gash.router.server.handlers.IWorkHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -28,7 +28,7 @@ public class NewWorkChannelHandler extends SimpleChannelInboundHandler<WorkMessa
 	protected ServerState state;
 	protected boolean debug = true;
 	//start of message handlers chain 
-	private IMessageHandler messageHandler;
+	private IWorkHandler messageHandler;
 
 	public NewWorkChannelHandler(ServerState state) {
 		if (state != null) {

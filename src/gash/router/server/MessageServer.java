@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import gash.router.container.RoutingConf;
 import gash.router.server.edges.EdgeMonitor;
 import gash.router.server.tasks.NoOpBalancer;
+import gash.router.server.tasks.Rebalancer;
+import gash.router.server.tasks.SimpleBalancer;
 import gash.router.server.tasks.TaskList;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -191,8 +193,10 @@ public class MessageServer {
 
 			state = new ServerState();
 			state.setConf(conf);
-
+			
+			//For rebalancing of tasks
 			TaskList tasks = new TaskList(new NoOpBalancer());
+			Rebalancer balancer = new SimpleBalancer(tasks);
 			state.setTasks(tasks);
 
 			EdgeMonitor emon = new EdgeMonitor(state);

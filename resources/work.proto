@@ -20,6 +20,7 @@ message Heartbeat {
 message Task {  
     required int64 series_id = 1;
     required int32 seq_id = 2;
+    optional CommandMessage commandMessage = 3;
 }
 
 // These are messages to keep the network running (not to perform work)

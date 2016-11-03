@@ -35,8 +35,10 @@ public class TaskList {
 	private int processed;
 	private int balanced;
 	private Rebalancer rebalance;
-	public final int MAX_SIZE = 20;
-
+	public final int MAX_SIZE = 16;
+	public final int STEALING_THRESHOLD = 4;
+	
+	
 	public TaskList(Rebalancer rb) {
 		rebalance = rb;
 	}
@@ -56,11 +58,22 @@ public class TaskList {
 	public int numBalanced() {
 		return balanced;
 	}
+	
+	/**
+	 * If the thread has less no. of inbound threads it starts stealing from adjacent nodes. 
+	 * @return boolean value
+	 */
+	public boolean startStealing(){
+		return numEnqueued() <= STEALING_THRESHOLD ? true: false;
+	}
 
 	/**
-	 * task taken to be given to another node
+	 * Task will be takeb to be given to some other node, 
+	 * Implements sharing of resources among the cluster
+	 * it measures if the queue no. of tasks enqueued are more than 50% of the allowed size
+	 * take the task n give it to the adjacent node.
 	 * 
-	 * @return
+	 * @return Task to be assigned to the other node now
 	 */
 	public Task rebalance() {
 		Task t = null;
@@ -82,7 +95,7 @@ public class TaskList {
 	 * 
 	 * @return
 	 */
-	protected Task dequeue() {
+	public Task dequeue() {
 		Task t = null;
 		try {
 			t = inbound.take();

@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.ByteString;
+import com.router.service.IDBService;
 import com.router.service.impl.RedisDBServiceImpl;
 
 import gash.router.container.RoutingConf;
@@ -38,7 +39,8 @@ import routing.Pipe.CommandMessage;
  */
 public class CommandHandler extends SimpleChannelInboundHandler<CommandMessage> {
 	protected static Logger logger = LoggerFactory.getLogger("cmd");
-	RedisDBServiceImpl redisServiceImpl = new RedisDBServiceImpl();
+	//Take it from conf
+	IDBService redisServiceImpl = new RedisDBServiceImpl();
 	protected RoutingConf conf;
 
 	public CommandHandler(RoutingConf conf) {

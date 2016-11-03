@@ -8,12 +8,8 @@ import pipe.work.Work.WorkMessage;
  * the chaining of handlers
  * @author neha
  */
-public interface IMessageHandler {
+public interface IWorkHandler {
 
-	public void chainedTo(IMessageHandler nextHandler);
-	
-	public IMessageHandler getNextInChain();
-	
 	public void handleMessage(WorkMessage msg, Channel channel);
 	
 }

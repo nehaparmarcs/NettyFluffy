@@ -11,7 +11,7 @@ import pipe.work.Work.Heartbeat;
 import pipe.work.Work.WorkMessage;
 import pipe.work.Work.WorkState;
 
-public class HeartBeatHandler implements IMessageHandler {
+public class HeartBeatHandler implements IWorkHandler {
 
 	private ServerState state;
 	
@@ -19,10 +19,7 @@ public class HeartBeatHandler implements IMessageHandler {
 		this.state = state;
 	}
 	private final org.slf4j.Logger logger =  LoggerFactory.getLogger("HeartBeatHandler");
-	@Override
-	public void chainedTo(IMessageHandler nextHandler) {
-		
-	}
+	
 
 	@Override
 	public void handleMessage(WorkMessage msg, Channel channel) {
@@ -82,10 +79,6 @@ public class HeartBeatHandler implements IMessageHandler {
 		return wb.build();
 	}
 	
-	@Override
-	public IMessageHandler getNextInChain() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 }
